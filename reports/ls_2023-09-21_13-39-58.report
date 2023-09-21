@@ -2,6 +2,7 @@
     "success": true,
     "message": "Success",
     "program": "ls",
+    "timestamp": "2023-09-21_13-39-58",
     "stdout": "reporter\nreports\n",
     "stderr": ""
 }

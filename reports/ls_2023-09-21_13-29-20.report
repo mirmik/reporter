@@ -1,7 +1,0 @@
-{
-    "success": true,
-    "message": "Success",
-    "program": "ls",
-    "stdout": "reporter\nreports\n",
-    "stderr": ""
-}

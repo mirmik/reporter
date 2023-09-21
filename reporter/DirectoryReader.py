@@ -2,16 +2,22 @@
 
 import os
 import json
+import datetime
+
+
+def parse_timestamp(timestamp):
+    return datetime.datetime.strptime(timestamp, "%Y-%m-%d_%H-%M-%S")
 
 
 class Report:
-    def __init__(self, success, message, report_path, program):
+    def __init__(self, success, message, report_path, program, timestamp):
         if isinstance(success, str):
             success = success.lower() == 'true'
         self.success = success
         self.message = message
         self.report_path = report_path
         self.program_name = program
+        self.timestamp = parse_timestamp(timestamp)
 
     def __str__(self):
         return f'{self.program_name}: {self.success}'
@@ -36,7 +42,7 @@ class ReportFileReader:
 
     def read_report(self):
         data = self.read_dictionary()
-        return Report(success=data['success'], message=data['message'], report_path=self.path, program=data['program'])
+        return Report(success=data['success'], message=data['message'], report_path=self.path, program=data['program'], timestamp=data['timestamp'])
 
 
 class DirectoryReader:

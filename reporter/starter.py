@@ -61,7 +61,8 @@ if __name__ == "__main__":
     dct = {
         "success": status,
         "message": message,
-        "program": progname
+        "program": progname,
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     }
     if parsed.save_output:
         dct['stdout'] = stdout
