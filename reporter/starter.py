@@ -59,6 +59,13 @@ if __name__ == "__main__":
 
     if not parsed.path:
         path = config['default_directory_path']
+    else:
+        path = parsed.path
+
+    if not os.path.exists(path):
+        # make directory
+        print(f'Creating directory {path}')
+        os.makedirs(path)
 
     stdout, stderr, returncode = start_application_and_read_output_and_status(
         progargs)
