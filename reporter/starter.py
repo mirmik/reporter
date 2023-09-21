@@ -38,6 +38,21 @@ def report_path(report, directory_path):
     return path
 
 
+def log_path(report, directory_path):
+    progname = report['program']
+    # progname must be a word started with a letter and consist of letters and digits
+    progname = ''.join([c for c in progname if c.isalnum()])
+    dt = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    filename = f'{progname}_{dt}.log'
+    path = os.path.join(directory_path, filename)
+    return path
+
+
+def print_log_to_file(text, path):
+    with open(path, 'w') as f:
+        f.write(text)
+
+
 def print_report_to_file(report, path):
     with open(path, 'w') as f:
         json.dump(report, f, indent=4)
@@ -51,6 +66,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str)
     parser.add_argument('--save-output', action='store_true')
+    parser.add_argument('--save-log', action='store_true')
     parsed = parser.parse_args(starter_args[1:])
 
     config_path = "/etc/reporter/config.json"
@@ -91,6 +107,11 @@ if __name__ == "__main__":
         dct['stderr'] = stderr
 
     print_report_to_console(dct)
+
+    if parsed.save_log:
+        log_path = log_path(dct, path)
+        print(f"Log path: {log_path}")
+        print_log_to_file(stdout, log_path)
 
     report_path = report_path(dct, path)
     print(f"Report path: {report_path}")
