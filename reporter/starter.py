@@ -113,9 +113,9 @@ def main_starter():
         print(f"Log path: {log_path}")
         print_log_to_file(stdout, log_path)
 
-    report_path = report_path(dct, path)
-    print(f"Report path: {report_path}")
-    print_report_to_file(dct, report_path)
+    rpath = report_path(dct, path)
+    print(f"Report path: {rpath}")
+    print_report_to_file(dct, rpath)
 
 
 if __name__ == '__main__':
