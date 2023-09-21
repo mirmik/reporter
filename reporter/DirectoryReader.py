@@ -173,7 +173,7 @@ if __name__ == '__main__':
     analyzer = ReportsAnalyzer(reports, errored)
     print(analyzer.metareport())
 
-    if args.sanitize:
+    if args.sanitize_errored:
         print('Sanitizing errored...')
         # delete errored
         for file in errored:
