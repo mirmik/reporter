@@ -42,9 +42,16 @@ if __name__ == "__main__":
     starter_args = sys.argv[:index_of_minuses]
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, required=True)
+    parser.add_argument('--path', type=str)
     parser.add_argument('--save-output', action='store_true')
     parsed = parser.parse_args(starter_args[1:])
+
+    if not parsed.path:
+        path = os.environ.get('REPORTS_PATH')
+        if not path:
+            raise ValueError('Path is required')
+    else:
+        path = parsed.path
 
     stdout, stderr, returncode = start_application_and_read_output_and_status(
         progargs)
@@ -54,7 +61,7 @@ if __name__ == "__main__":
     progname = progargs[0]
 
     print("Reporter starts with arguments:")
-    print(f"\tPath: {parsed.path}")
+    print(f"\tPath: {path}")
 
     print("Final report:")
 
@@ -70,6 +77,6 @@ if __name__ == "__main__":
 
     print_report_to_console(dct)
 
-    report_path = report_path(dct, parsed.path)
+    report_path = report_path(dct, path)
     print(f"Report path: {report_path}")
     print_report_to_file(dct, report_path)

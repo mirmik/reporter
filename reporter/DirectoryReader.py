@@ -3,6 +3,7 @@
 import os
 import json
 import datetime
+import shutil
 import argparse
 
 
@@ -101,8 +102,11 @@ class ReportsAnalyzer:
         success = self.count_success()
         total = len(self.reports)
         list_of_unsuccessful = self.list_of_unsuccessful()
+        list_of_successful = [
+            report for report in self.reports if report.success]
         return f'Success: {success}/{total}\n' \
-            f'Unsuccessful: {list_of_unsuccessful}'
+            f'Unsuccessful: {[prog.program_name for prog in list_of_unsuccessful]}\n' \
+            f'Successful: {[prog.program_name for prog in list_of_successful]}'
 
     def list_of_unsuccessful(self):
         unsuccessful = []
@@ -114,11 +118,23 @@ class ReportsAnalyzer:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--path', type=str, default='reports')
+    parser.add_argument('--path', type=str)
     parser.add_argument('--last-days', type=int, required=False)
     parser.add_argument('--last-hours', type=int, required=False)
     parser.add_argument('--last-minutes', type=int, required=False)
     args = parser.parse_args()
+
+    if not args.path:
+        path = os.environ.get('REPORTS_PATH')
+        if not path:
+            raise ValueError('Path is required')
+    else:
+        path = args.path
+
+    if not os.path.exists(path):
+        # make directory
+        print(f'Creating directory {path}')
+        os.makedirs(path)
 
     if args.last_days:
         timedelta = datetime.timedelta(days=args.last_days)
@@ -129,7 +145,7 @@ if __name__ == '__main__':
     else:
         timedelta = datetime.timedelta(days=1)
 
-    directory_reader = DirectoryReader(args.path)
+    directory_reader = DirectoryReader(path)
     reports = directory_reader.read_last_delta_reports_by_mtime(timedelta)
     analyzer = ReportsAnalyzer(reports)
     print(analyzer.metareport())

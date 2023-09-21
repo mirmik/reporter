@@ -1,0 +1,8 @@
+{
+    "success": true,
+    "message": "Success",
+    "program": "ls",
+    "timestamp": "2023-09-21_13-58-04",
+    "stdout": "reporter\nreports\n",
+    "stderr": ""
+}
