@@ -16,7 +16,7 @@ def start_application_and_read_output_and_status(args):
     return stdout.decode('utf-8'), stderr.decode('utf-8'), process.returncode
 
 
-def print_report_to_console(report):
+def print_report_to_console(dct):
     pretty = pprint.PrettyPrinter(width=30)
     pretty.pprint(dct)
 
