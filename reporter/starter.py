@@ -67,6 +67,7 @@ def main_starter():
     parser.add_argument('--path', type=str)
     parser.add_argument('--save-output', action='store_true')
     parser.add_argument('--save-log', action='store_true')
+    parser.add_argument('--name', type=str)
     parsed = parser.parse_args(starter_args[1:])
 
     config_path = "/etc/reporter/config.json"
@@ -89,6 +90,9 @@ def main_starter():
     status = True if returncode == 0 else False
     message = "Success" if status else "Failure"
     progname = progargs[0]
+
+    if parsed.name:
+        progname = parsed.name
 
     print("Reporter starts with arguments:")
     print(f"\tPath: {path}")
