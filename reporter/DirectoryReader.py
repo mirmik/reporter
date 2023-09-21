@@ -3,6 +3,7 @@
 import os
 import json
 import datetime
+import argparse
 
 
 def parse_timestamp(timestamp):
@@ -62,6 +63,28 @@ class DirectoryReader:
             reports.append(report_reader.read_report())
         return reports
 
+    def read_last_delta_reports_by_timestamp(self, delta):
+        reports = self.read_reports()
+        last_day_reports = []
+        for report in reports:
+            if report.timestamp > datetime.datetime.now() - delta:
+                last_day_reports.append(report)
+        return last_day_reports
+
+    def mtime_to_datetime(self, mtime):
+        return datetime.datetime.fromtimestamp(mtime)
+
+    def read_last_delta_reports_by_mtime(self, delta):
+        files = self.files_list()
+        reports = []
+        for file in files:
+            file_path = os.path.join(self.path, file)
+            mtime = os.path.getmtime(file_path)
+            if self.mtime_to_datetime(mtime) > datetime.datetime.now() - delta:
+                report_reader = ReportFileReader(file_path)
+                reports.append(report_reader.read_report())
+        return reports
+
 
 class ReportsAnalyzer:
     def __init__(self, reports):
@@ -90,7 +113,23 @@ class ReportsAnalyzer:
 
 
 if __name__ == '__main__':
-    directory_reader = DirectoryReader('reports')
-    reports = directory_reader.read_reports()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path', type=str, default='reports')
+    parser.add_argument('--last-days', type=int, required=False)
+    parser.add_argument('--last-hours', type=int, required=False)
+    parser.add_argument('--last-minutes', type=int, required=False)
+    args = parser.parse_args()
+
+    if args.last_days:
+        timedelta = datetime.timedelta(days=args.last_days)
+    elif args.last_hours:
+        timedelta = datetime.timedelta(hours=args.last_hours)
+    elif args.last_minutes:
+        timedelta = datetime.timedelta(minutes=args.last_minutes)
+    else:
+        timedelta = datetime.timedelta(days=1)
+
+    directory_reader = DirectoryReader(args.path)
+    reports = directory_reader.read_last_delta_reports_by_mtime(timedelta)
     analyzer = ReportsAnalyzer(reports)
     print(analyzer.metareport())
