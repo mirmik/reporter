@@ -137,7 +137,7 @@ class ReportsAnalyzer:
         return unsuccessful
 
 
-if __name__ == '__main__':
+def main_reporter():
     parser = argparse.ArgumentParser()
     parser.add_argument('--path', type=str)
     parser.add_argument('--last-days', type=int, required=False)
@@ -180,3 +180,7 @@ if __name__ == '__main__':
             file_path = os.path.join(path, file)
             os.remove(file_path)
         print('Done')
+
+
+if __name__ == '__main__':
+    main_reporter()

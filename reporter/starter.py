@@ -58,7 +58,7 @@ def print_report_to_file(report, path):
         json.dump(report, f, indent=4)
 
 
-if __name__ == "__main__":
+def main_starter():
     index_of_minuses = sys.argv.index('--')
     progargs = sys.argv[index_of_minuses+1:]
     starter_args = sys.argv[:index_of_minuses]
@@ -116,3 +116,7 @@ if __name__ == "__main__":
     report_path = report_path(dct, path)
     print(f"Report path: {report_path}")
     print_report_to_file(dct, report_path)
+
+
+if __name__ == '__main__':
+    main_starter()
