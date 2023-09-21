@@ -69,7 +69,8 @@ if __name__ == "__main__":
         "success": status,
         "message": message,
         "program": progname,
-        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        "timestamp": datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+        "owner": os.environ.get('USER')
     }
     if parsed.save_output:
         dct['stdout'] = stdout
