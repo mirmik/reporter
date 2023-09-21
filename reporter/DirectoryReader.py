@@ -43,8 +43,12 @@ class ReportFileReader:
         return data['success']
 
     def read_report(self):
-        data = self.read_dictionary()
-        return Report(success=data['success'], message=data['message'], report_path=self.path, program=data['program'], timestamp=data['timestamp'])
+        try:
+            data = self.read_dictionary()
+            return Report(success=data['success'], message=data['message'], report_path=self.path, program=data['program'], timestamp=data['timestamp'])
+        except:
+            print(f'Error while reading report from {self.path}')
+            raise
 
 
 class DirectoryReader:
@@ -61,7 +65,10 @@ class DirectoryReader:
         for file in files:
             file_path = os.path.join(self.path, file)
             report_reader = ReportFileReader(file_path)
-            reports.append(report_reader.read_report())
+            try:
+                reports.append(report_reader.read_report())
+            except:
+                continue
         return reports
 
     def read_last_delta_reports_by_timestamp(self, delta):
@@ -76,20 +83,33 @@ class DirectoryReader:
         return datetime.datetime.fromtimestamp(mtime)
 
     def read_last_delta_reports_by_mtime(self, delta):
+        errored = []
         files = self.files_list()
         reports = []
         for file in files:
-            file_path = os.path.join(self.path, file)
-            mtime = os.path.getmtime(file_path)
-            if self.mtime_to_datetime(mtime) > datetime.datetime.now() - delta:
-                report_reader = ReportFileReader(file_path)
-                reports.append(report_reader.read_report())
-        return reports
+            try:
+                file_path = os.path.join(self.path, file)
+                mtime = os.path.getmtime(file_path)
+                if self.mtime_to_datetime(mtime) > datetime.datetime.now() - delta:
+                    report_reader = ReportFileReader(file_path)
+                    reports.append(report_reader.read_report())
+            except:
+                errored.append(file)
+                continue
+        return reports, errored
+
+
+def read_config(path):
+    with open(path, 'r') as f:
+        s = f.read()
+        data = json.loads(s)
+    return data
 
 
 class ReportsAnalyzer:
-    def __init__(self, reports):
+    def __init__(self, reports, errored):
         self.reports = reports
+        self.errored = errored
 
     def count_success(self):
         success = 0
@@ -106,7 +126,8 @@ class ReportsAnalyzer:
             report for report in self.reports if report.success]
         return f'Success: {success}/{total}\n' \
             f'Unsuccessful: {[prog.program_name for prog in list_of_unsuccessful]}\n' \
-            f'Successful: {[prog.program_name for prog in list_of_successful]}'
+            f'Successful: {[prog.program_name for prog in list_of_successful]}\n' \
+            f'Errored: {self.errored}'
 
     def list_of_unsuccessful(self):
         unsuccessful = []
@@ -122,14 +143,15 @@ if __name__ == '__main__':
     parser.add_argument('--last-days', type=int, required=False)
     parser.add_argument('--last-hours', type=int, required=False)
     parser.add_argument('--last-minutes', type=int, required=False)
+    parser.add_argument('--sanitize-errored', action='store_true')
     args = parser.parse_args()
 
+    config_path = "/etc/reporter/config.json"
+    print("Config path:", config_path)
+    config = read_config(config_path)
+
     if not args.path:
-        path = os.environ.get('REPORTS_PATH')
-        if not path:
-            raise ValueError('Path is required')
-    else:
-        path = args.path
+        path = config['default_directory_path']
 
     if not os.path.exists(path):
         # make directory
@@ -146,6 +168,15 @@ if __name__ == '__main__':
         timedelta = datetime.timedelta(days=1)
 
     directory_reader = DirectoryReader(path)
-    reports = directory_reader.read_last_delta_reports_by_mtime(timedelta)
-    analyzer = ReportsAnalyzer(reports)
+    reports, errored = directory_reader.read_last_delta_reports_by_mtime(
+        timedelta)
+    analyzer = ReportsAnalyzer(reports, errored)
     print(analyzer.metareport())
+
+    if args.sanitize:
+        print('Sanitizing errored...')
+        # delete errored
+        for file in errored:
+            file_path = os.path.join(path, file)
+            os.remove(file_path)
+        print('Done')

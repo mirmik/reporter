@@ -21,6 +21,13 @@ def print_report_to_console(report):
     pretty.pprint(dct)
 
 
+def read_config(path):
+    with open(path, 'r') as f:
+        s = f.read()
+        data = json.loads(s)
+    return data
+
+
 def report_path(report, directory_path):
     progname = report['program']
     # progname must be a word started with a letter and consist of letters and digits
@@ -46,12 +53,12 @@ if __name__ == "__main__":
     parser.add_argument('--save-output', action='store_true')
     parsed = parser.parse_args(starter_args[1:])
 
+    config_path = "/etc/reporter/config.json"
+    print("Config path:", config_path)
+    config = read_config(config_path)
+
     if not parsed.path:
-        path = os.environ.get('REPORTS_PATH')
-        if not path:
-            raise ValueError('Path is required')
-    else:
-        path = parsed.path
+        path = config['default_directory_path']
 
     stdout, stderr, returncode = start_application_and_read_output_and_status(
         progargs)
